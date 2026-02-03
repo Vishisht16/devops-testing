@@ -19,7 +19,7 @@ def home():
         </style>
     </head>
     <body>
-        <h1>Welcome to the DevOps Store!</h1>
+        <h1>Welcome to the DevOps Store! v2</h1>
         <button onclick="placeOrder()">Place Order</button>
         <div id="response"></div>
         
