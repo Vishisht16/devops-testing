@@ -1,0 +1,56 @@
+# --- PART 1: PVC (Storage Request) ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-pvc  # Name of this storage claim
+spec:
+  accessModes:
+    - ReadWriteOnce # Only one pod can use it (block storage)
+  resources:
+    requests:
+      storage: 1Gi  # Request 1 GB of storage
+
+---
+
+# --- PART 2: DEPLOYMENT (Updated) ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+spec:
+  replicas: 1  # Keep database at 1 replica until you learn Master–Replica
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:alpine
+        ports:
+        - containerPort: 6379
+        volumeMounts:            # Where to mount the volume inside the container
+        - name: redis-storage
+          mountPath: /data       # Redis stores data here by default
+      volumes:                   # Where the volume comes from
+      - name: redis-storage
+        persistentVolumeClaim:
+          claimName: redis-pvc   # Use the PVC defined above
+
+---
+
+# --- PART 3: SERVICE (Same as before) ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-db
+spec:
+  selector:
+    app: redis
+  ports:
+    - protocol: TCP
+      port: 6379
+      targetPort: 6379

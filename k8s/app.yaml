@@ -1,0 +1,43 @@
+# --- PART 1: DEPLOYMENT (App Logic) ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-store-app
+spec:
+  replicas: 2  # Fun part: We’ll run 2 copies to observe load balancing
+  selector:
+    matchLabels:
+      app: devops-store
+  template:
+    metadata:
+      labels:
+        app: devops-store
+    spec:
+      containers:
+      - name: python-app
+        image: gcr.io/PROJECT_ID/devops-store:IMAGE_TAG  # Image tag will be replaced by GitHub Actions with commit SHA
+        imagePullPolicy: Always     # IMPORTANT: Always pull the latest image from registry
+        ports:
+        - containerPort: 5000
+        env:                        # Environment variables are defined here
+        - name: REDIS_HOST          # Variable name used in the code
+          value: "redis-db"         # Service name (created in the previous file)
+        - name: REDIS_PORT
+          value: "6379"
+
+---
+
+# --- PART 2: SERVICE (Public Access) ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: devops-store-service
+spec:
+  selector:
+    app: devops-store
+  type: LoadBalancer  # IMPORTANT: Expose this service to the internet
+  ports:
+    - protocol: TCP
+      port: 80          # Service port (internal to the cluster)
+      targetPort: 5000  # Application port (inside the container)
+      nodePort: 30007   # External port (used to access from browser)

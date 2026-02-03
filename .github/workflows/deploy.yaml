@@ -1,0 +1,66 @@
+name: Build and Deploy to GKE
+
+on:
+  push:
+    branches: [ "main" ] # Runs workflow when code is pushed to the main branch
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GKE_CLUSTER: devops-cluster    # GKE cluster name created via Terraform
+  GKE_ZONE: us-central1-a        # Cluster zone 
+  IMAGE: devops-store
+
+jobs:
+  setup-build-publish-deploy:
+    name: Setup, Build, Publish, and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    # 1. Authenticate with Google Cloud using Service Account key
+    - id: 'auth'
+      uses: 'google-github-actions/auth@v2'
+      with:
+        credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+    # 2. Configure Docker to authenticate with Google Container Registry
+    - name: Configure Docker
+      run: gcloud auth configure-docker --quiet
+
+    # 3. Connect to the GKE cluster
+    - name: Get GKE Credentials
+      uses: google-github-actions/get-gke-credentials@v2
+      with:
+        cluster_name: ${{ env.GKE_CLUSTER }}
+        location: ${{ env.GKE_ZONE }}
+
+    # 4. Build Docker image (Tag = Commit Hash i.e. $GITHUB_SHA)
+    - name: Build Docker Image
+      run: |-
+        docker build \
+          --tag "gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA" \
+          .
+
+    # 5. Push Docker image to Google Container Registry
+    - name: Publish Docker Image
+      run: |-
+        docker push "gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA"
+
+    # 6. Update Kubernetes YAML and deploy to GKE
+    - name: Deploy to GKE
+      run: |-
+        cd k8s
+
+        # Dynamically replace placeholders in app.yaml
+        sed -i "s|PROJECT_ID|$PROJECT_ID|g" app.yaml
+        sed -i "s|IMAGE_TAG|$GITHUB_SHA|g" app.yaml
+
+        # Apply Kubernetes manifests
+        kubectl apply -f redis.yaml
+        kubectl apply -f app.yaml
+
+        # Check deployment status
+        kubectl rollout status deployment/devops-store-app
+        kubectl get services -o wide
