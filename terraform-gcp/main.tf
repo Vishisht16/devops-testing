@@ -6,6 +6,17 @@ provider "google" {
   zone    = var.zone
 }
 
+# We also need the Helm provider to deploy applications to our GKE cluster
+data "google_client_config" "default" {}
+
+provider "helm" {
+  kubernetes {
+    host                   = "https://${google_container_cluster.primary.endpoint}"
+    token                  = data.google_client_config.default.access_token
+    cluster_ca_certificate = base64decode(google_container_cluster.primary.master_auth[0].cluster_ca_certificate)
+  }
+}
+
 # 2. Resource (What resource are we creating?)
 # Syntax: resource "type_of_resource" "resource_name"
 
@@ -55,4 +66,14 @@ resource "google_project_iam_member" "node_artifact_registry_reader" {
   project = var.project_id
   role    = "roles/artifactregistry.reader"
   member  = "serviceAccount:${google_service_account.default.email}"
+}
+
+resource "helm_release" "prometheus_stack" {
+  name       = "monitoring"
+  repository = "https://prometheus-community.github.io/helm-charts"
+  chart      = "kube-prometheus-stack"
+  namespace  = "default"
+
+  # We need to ensure that the node pool is created before we try to deploy the Helm chart, since the chart will create Kubernetes resources that require a working cluster.
+  depends_on = [google_container_node_pool.primary_preemptible_nodes]
 }

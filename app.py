@@ -57,6 +57,17 @@ def buy():
         return "Database unavailable, but App is running!"
     except Exception as e:
         return "Database unavailable, but App is running!"
+    
+import math
+
+@app.route('/heavy')
+def heavy_load():
+    # Simulate CPU intensive task
+    n = 1000000
+    while n > 0:
+        n -= 1
+        math.sqrt(n)
+    return "CPU Burned Successfully!"
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
