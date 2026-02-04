@@ -4,7 +4,7 @@ kind: Deployment
 metadata:
   name: devops-store-app
 spec:
-  replicas: 2  # Fun part: We’ll run 2 copies to observe load balancing
+  replicas: 2 
   selector:
     matchLabels:
       app: devops-store
@@ -24,6 +24,11 @@ spec:
           value: "redis-db"         # Service name (created in the previous file)
         - name: REDIS_PORT
           value: "6379"
+        resources:
+          requests:
+            cpu: "250m"         # Minimum CPU required
+          limits:
+            cpu: "500m"        # Maximum CPU allowed
 
 ---
 

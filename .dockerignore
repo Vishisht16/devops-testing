@@ -1,0 +1,42 @@
+# Git
+.git
+.gitignore
+.github
+
+# Local development files
+stress.js
+*.local
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info
+venv/
+env/
+ENV/
+
+# Terraform
+terraform-gcp/
+*.tfstate
+*.tfstate.*
+.terraform/
+*.tfvars
+
+# Kubernetes
+k8s/
+
+# Documentation
+README.md
+LICENSE
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Misc
+minikube-linux-amd64
+*:Zone.Identifier
