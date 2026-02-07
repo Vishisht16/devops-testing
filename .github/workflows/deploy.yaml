@@ -43,17 +43,25 @@ jobs:
           --tag "gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA" \
           .
 
-    # 5. Push Docker image to Google Container Registry
+    # 5. Run Trivy Vulnerability Scanner in image mode
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@0.33.1
+      with:
+        scan-type: 'image'
+        image-ref: "gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE }}:${{ github.sha }}"
+        trivy-config: trivy/trivy.yaml
+
+    # 6. Push Docker image to Google Container Registry
     - name: Publish Docker Image
       run: |-
         docker push "gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA"
 
-    # 6. Create or update the Redis Password in Kubernetes Secrets
+    # 7. Create or update the Redis Password in Kubernetes Secrets
     - name: Create or update Redis Secret
       run: |-
         kubectl create secret generic redis-password --from-literal=password=${{ secrets.REDIS_PASSWORD }} --dry-run=client -o yaml | kubectl apply -f -
 
-    # 7. Update Kubernetes YAML and deploy to GKE
+    # 8. Update Kubernetes YAML and deploy to GKE
     - name: Deploy to GKE
       run: |-
         cd k8s

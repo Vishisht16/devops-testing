@@ -1,0 +1,15 @@
+  format: table
+  exit-code: 1
+  severity: CRITICAL
+
+misconfiguration:
+  scanners:
+   - dockerfile
+   - helm
+   - kubernetes
+   - terraform
+   - terraformplan-json
+   - terraformplan-snapshot
+
+vulnerability:
+  ignore-unfixed: true
