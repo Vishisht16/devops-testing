@@ -45,10 +45,22 @@ variable "machine_type" {
   default     = "e2-standard-2"
 }
 
-variable "node_count" {
-  description = "Number of nodes in the node pool"
+variable "initial_node_count" {
+  description = "Initial number of nodes in the node pool"
   type        = number
   default     = 1
+}
+
+variable "min_node_count" {
+  description = "Minimum number of nodes in the node pool"
+  type        = number
+  default     = 1
+}
+
+variable "max_node_count" {
+  description = "Maximum number of nodes in the node pool"
+  type        = number
+  default     = 3
 }
 
 variable "preemptible" {
