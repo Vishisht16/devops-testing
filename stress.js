@@ -12,6 +12,6 @@ export const options = {
 
 export default function () {
   // Each virtual user makes a GET request to the /buy endpoint
-  http.get('http://104.198.41.6/heavy');
+  http.get('http://34.9.108.73/heavy');
   sleep(1); // Each user waits 1 second before making the next request
 }

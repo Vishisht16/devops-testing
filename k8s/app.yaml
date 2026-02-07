@@ -24,11 +24,21 @@ spec:
           value: "redis-db"         # Service name (created in the previous file)
         - name: REDIS_PORT
           value: "6379"
+        - name: REDIS_PASSWORD_PATH
+          value: "/etc/redis-auth/password"
+        volumeMounts:
+        - name: redis-password
+          mountPath: /etc/redis-auth
+          readOnly: true
         resources:
           requests:
             cpu: "250m"         # Minimum CPU required
           limits:
             cpu: "500m"        # Maximum CPU allowed
+      volumes:
+      - name: redis-password
+        secret:
+          secretName: redis-password
 
 ---
 

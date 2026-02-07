@@ -30,16 +30,22 @@ spec:
       containers:
       - name: redis
         image: redis:alpine
+        command: ["sh", "-c", "redis-server --requirepass $(cat /etc/redis-auth/password)"]
         ports:
         - containerPort: 6379
         volumeMounts:            # Where to mount the volume inside the container
         - name: redis-storage
           mountPath: /data       # Redis stores data here by default
+        - name: redis-password
+          mountPath: /etc/redis-auth
+          readOnly: true
       volumes:                   # Where the volume comes from
       - name: redis-storage
         persistentVolumeClaim:
           claimName: redis-pvc   # Use the PVC defined above
-
+      - name: redis-password
+        secret:
+          secretName: redis-password
 ---
 
 # --- PART 3: SERVICE (Same as before) ---

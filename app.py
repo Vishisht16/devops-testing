@@ -41,13 +41,23 @@ def home():
     </html>
     '''
 
+
+# Function to get password from the volume mount
+def get_redis_password():
+    path = os.environ.get('REDIS_PASSWORD_PATH', '/etc/redis-auth/password')
+    if os.path.exists(path):
+        with open(path, 'r') as f:
+            return f.read().strip()
+    return None
+
 @app.route('/buy')
 def buy():
     try:
         redis_host = os.getenv('REDIS_HOST', 'localhost')
         redis_port = int(os.getenv('REDIS_PORT', 6379))
+        redis_password = get_redis_password()
         
-        r = redis.Redis(host=redis_host, port=redis_port, decode_responses=True)
+        r = redis.Redis(host=redis_host, port=redis_port, password=redis_password, decode_responses=True)
         r.ping()
         
         order_count = r.incr('order_count')

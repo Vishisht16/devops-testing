@@ -42,7 +42,7 @@ variable "service_account_display_name" {
 variable "machine_type" {
   description = "The machine type for node pool"
   type        = string
-  default     = "e2-medium"
+  default     = "e2-standard-2"
 }
 
 variable "node_count" {

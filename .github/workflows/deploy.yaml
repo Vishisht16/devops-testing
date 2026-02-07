@@ -48,7 +48,12 @@ jobs:
       run: |-
         docker push "gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA"
 
-    # 6. Update Kubernetes YAML and deploy to GKE
+    # 6. Create or update the Redis Password in Kubernetes Secrets
+    - name: Create or update Redis Secret
+      run: |-
+        kubectl create secret generic redis-password --from-literal=password=${{ secrets.REDIS_PASSWORD }} --dry-run=client -o yaml | kubectl apply -f -
+
+    # 7. Update Kubernetes YAML and deploy to GKE
     - name: Deploy to GKE
       run: |-
         cd k8s
@@ -64,3 +69,5 @@ jobs:
         # Check deployment status
         kubectl rollout status deployment/devops-store-app
         kubectl get services -o wide
+
+    
