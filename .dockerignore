@@ -4,6 +4,7 @@
 .github
 
 # Local development files
+k6/
 stress.js
 *.local
 
